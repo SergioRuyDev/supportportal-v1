@@ -29,7 +29,8 @@ public class User implements Serializable {
     public User() {}
 
     public User(Long id, String userId, String firstName, String lastName, String username, String password,
-                String email, String profileImageUrl, Date lastLoginDate, Date lastLoginDateDisplay, Date joinDate, String[] roles, String[] authorities, boolean isActive, boolean isNotLocked) {
+                String email, String profileImageUrl, Date lastLoginDate, Date lastLoginDateDisplay, Date joinDate,
+                String[] roles, String[] authorities, boolean isActive, boolean isNotLocked) {
         this.id = id;
         this.userId = userId;
         this.firstName = firstName;
