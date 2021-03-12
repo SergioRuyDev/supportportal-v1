@@ -34,21 +34,5 @@ public class User implements Serializable {
     private boolean isNotLocked;
 
 
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
-    public boolean isNotLocked() {
-        return isNotLocked;
-    }
-
-    public void setNotLocked(boolean notLocked) {
-        isNotLocked = notLocked;
-    }
 }
 
