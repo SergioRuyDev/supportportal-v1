@@ -4,10 +4,19 @@ import com.auth0.jwt.JWT;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 import static com.sergioruy.supportportal.constant.SecurityConstant.*;
+
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.sergioruy.supportportal.domain.UserPrincipal;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.util.*;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class JWTTokenProvider {
     @Value("${jwt.secret}")
@@ -21,7 +30,33 @@ public class JWTTokenProvider {
                 .sign(HMAC512(secret.getBytes()));
     }
 
-    private String[] getClaimsFromUser(UserPrincipal userPrincipal) {
+    public List<GrantedAuthority> getAuthorities(String token) {
+        String[] claims = getClaimsFromToken(token);
+        return Arrays.stream(claims).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+    }
+
+    private String[] getClaimsFromToken(String token) {
+        JWTVerifier verifier = getJWTVerifier();
+        return verifier.verify(token).getClaim(AUTHORITIES).asArray(String.class);
+    }
+
+    private JWTVerifier getJWTVerifier() {
+        JWTVerifier verifier;
+        try {
+            Algorithm algorithm = HMAC512(secret);
+            verifier = JWT.require(algorithm).withIssuer(SERGIO_RUY_DEV).build();
+        }catch (JWTVerificationException exception) {
+            throw new JWTVerificationException(TOKEN_CANNOT_BE_VERIFIED);
+        }
+        return verifier;
+    }
+
+    private String[] getClaimsFromUser(UserPrincipal user) {
+        List<String> authorities = new ArrayList<>();
+        for (GrantedAuthority grantedAuthority : user.getAuthorities()) {
+            authorities.add(grantedAuthority.getAuthority());
+        }
+        return authorities.toArray(new String[0]);
     }
 
 }
