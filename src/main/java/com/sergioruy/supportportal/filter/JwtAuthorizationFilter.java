@@ -2,6 +2,7 @@ package com.sergioruy.supportportal.filter;
 
 import com.sergioruy.supportportal.constant.SecurityConstant;
 import com.sergioruy.supportportal.utility.JWTTokenProvider;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,12 +21,9 @@ import static com.sergioruy.supportportal.constant.SecurityConstant.TOKEN_PREFIX
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
+@AllArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private JWTTokenProvider jwtTokenProvider;
-
-    public JwtAuthorizationFilter(JWTTokenProvider jwtTokenProvider) {
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
