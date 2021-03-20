@@ -1,10 +1,10 @@
 package com.sergioruy.supportportal.configuration;
 
-import com.sergioruy.supportportal.constant.SecurityConstant;
 import com.sergioruy.supportportal.filter.JwtAccessDeniedHandler;
 import com.sergioruy.supportportal.filter.JwtAuthenticationEntryPoint;
 import com.sergioruy.supportportal.filter.JwtAuthorizationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,17 +19,31 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static com.sergioruy.supportportal.constant.SecurityConstant.PUBLIC_URLS;
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@RequiredArgsConstructor
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private JwtAuthorizationFilter jwtAuthorizationFilter;
     private JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    @Qualifier("userDetailService") private UserDetailsService userDetailsService;
+    private UserDetailsService userDetailsService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Autowired
+    public SecurityConfiguration(JwtAuthorizationFilter jwtAuthorizationFilter,
+                                 JwtAccessDeniedHandler jwtAccessDeniedHandler,
+                                 JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+                                 @Qualifier("userDetailsService") UserDetailsService userDetailsService,
+                                 BCryptPasswordEncoder bCryptPasswordEncoder) {
+        this.jwtAuthorizationFilter = jwtAuthorizationFilter;
+        this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+        this.userDetailsService = userDetailsService;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -39,8 +53,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().cors().and()
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and().authorizeRequests().antMatchers(SecurityConstant.PUBLIC_URLS).permitAll()
+        .sessionManagement().sessionCreationPolicy(STATELESS)
+        .and().authorizeRequests().antMatchers(PUBLIC_URLS).permitAll()
         .anyRequest().authenticated()
         .and()
         .exceptionHandling().accessDeniedHandler(jwtAccessDeniedHandler)
