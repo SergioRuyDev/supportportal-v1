@@ -1,6 +1,5 @@
 package com.sergioruy.supportportal.resource;
 
-import com.sergioruy.supportportal.exception.domain.EmailExistException;
 import com.sergioruy.supportportal.exception.domain.ExceptionHandling;
 import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
