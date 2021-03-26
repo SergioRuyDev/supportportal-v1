@@ -2,6 +2,7 @@ package com.sergioruy.supportportal.service.impl;
 
 import com.sergioruy.supportportal.domain.User;
 import com.sergioruy.supportportal.domain.UserPrincipal;
+import com.sergioruy.supportportal.enumeration.Role;
 import com.sergioruy.supportportal.exception.domain.EmailExistException;
 import com.sergioruy.supportportal.exception.domain.EmailNotFoundException;
 import com.sergioruy.supportportal.exception.domain.UsernameExistException;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
+
+import static com.sergioruy.supportportal.enumeration.Role.ROLE_USER;
 
 @Service
 @Transactional
@@ -53,6 +56,21 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User register(String firstName, String lastName, String username, String email) throws UsernameExistException, EmailExistException {
         validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
+        User user = new User();
+        user.setId(generateUserId());
+        String password = generatePassword();
+        String encodedPassword = encodePassword(password);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setJoinDate(new Date());
+        user.setPassword(encodedPassword);
+        user.setActive(true);
+        user.setNotLocked(true);
+        user.setRole(ROLE_USER.name());
+        user.setAuthorities(ROLE_USER.getAuthorities());
+        user.setProfileImageUrl(getTemporaryProfileImageUrl());
         return null;
     }
 
