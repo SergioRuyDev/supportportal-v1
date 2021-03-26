@@ -3,6 +3,7 @@ package com.sergioruy.supportportal.service.impl;
 import com.sergioruy.supportportal.domain.User;
 import com.sergioruy.supportportal.domain.UserPrincipal;
 import com.sergioruy.supportportal.exception.domain.EmailExistException;
+import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
 import com.sergioruy.supportportal.exception.domain.UsernameExistException;
 import com.sergioruy.supportportal.repository.UserRepository;
 import com.sergioruy.supportportal.service.UserService;
@@ -23,13 +24,14 @@ import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
+import static com.sergioruy.supportportal.constant.UserImplConstant.*;
 import static com.sergioruy.supportportal.enumeration.Role.ROLE_USER;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service
 @Transactional
 @Qualifier("userDetailsService")
 public class UserServiceImpl implements UserService, UserDetailsService {
-
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
     private UserRepository userRepository;
     private BCryptPasswordEncoder passwordEncoder;
@@ -44,21 +46,21 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findUserByUsername(username);
         if (user == null) {
-            LOGGER.error("User not found by username: " + username);
-            throw new UsernameNotFoundException("User not found by username: " + username);
+            LOGGER.error(NO_USER_FOUND_BY_USERNAME + username);
+            throw new UsernameNotFoundException(NO_USER_FOUND_BY_USERNAME + username);
         } else {
             user.setLastLoginDateDisplay(user.getLastLoginDate());
             user.setLastLoginDate(new Date());
             userRepository.save(user);
             UserPrincipal userPrincipal = new UserPrincipal(user);
-            LOGGER.info("Returning found user by username: " + username);
+            LOGGER.info(FOUND_USER_BY_USERNAME + username);
             return null;
         }
     }
 
     @Override
-    public User register(String firstName, String lastName, String username, String email) throws UsernameExistException, EmailExistException {
-        validateNewUsernameAndEmail(StringUtils.EMPTY, username, email);
+    public User register(String firstName, String lastName, String username, String email) throws UserNotFoundException, UsernameExistException, EmailExistException {
+        validateNewUsernameAndEmail(EMPTY, username, email);
         User user = new User();
         user.setUserId(generateUserId());
         String password = generatePassword();
@@ -76,11 +78,26 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setProfileImageUrl(getTemporaryProfileImageUrl());
         userRepository.save(user);
         LOGGER.info("New user password: " + password);
-        return null;
+        return user;
+    }
+
+    @Override
+    public List<User> getUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User findByUsername(String username) {
+        return userRepository.findUserByUsername(username);
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        return userRepository.findUserByEmail(email);
     }
 
     private String getTemporaryProfileImageUrl() {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/image/profile/temp").toUriString();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
     }
 
     private String encodePassword(String password) {
@@ -95,48 +112,30 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return RandomStringUtils.randomNumeric(10);
     }
 
-    private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UsernameExistException, EmailExistException {
+    private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException, UsernameExistException, EmailExistException {
+        User userByNewUsername = findByUsername(newUsername);
+        User userByNewEmail = findUserByEmail(newEmail);
         if (StringUtils.isNotBlank(currentUsername)) {
             User currentUser = findByUsername(currentUsername);
             if (currentUser == null) {
-                throw new UsernameNotFoundException("No user found by username " + currentUsername);
+                throw new UsernameNotFoundException(NO_USER_FOUND_BY_USERNAME + currentUsername);
             }
-            User userByNewUsername = findByUsername(newUsername);
             if (userByNewUsername != null && !currentUser.getId().equals(userByNewUsername.getId())) {
-                throw new UsernameExistException("Username already exists.");
+                throw new UsernameExistException(USERNAME_ALREADY_EXISTS);
             }
-
-            User userByNewEmail = findUserByEmail(newEmail);
             if (userByNewEmail != null && !currentUser.getId().equals(userByNewEmail.getId())) {
-                throw new EmailExistException("Email already exists.");
+                throw new EmailExistException(EMAIL_ALREADY_EXISTS);
             }
             return currentUser;
         } else {
-            User userByUsername = findByUsername(newUsername);
-            if (userByUsername != null) {
-                throw new UsernameExistException("Username already exists.");
+            if (userByNewUsername != null) {
+                throw new UsernameExistException(USERNAME_ALREADY_EXISTS);
             }
-            User userByEmail = findUserByEmail(newEmail);
-            if (userByEmail != null) {
-                throw new EmailExistException("Email already exists.");
+            if (userByNewEmail != null) {
+                throw new EmailExistException(EMAIL_ALREADY_EXISTS);
             }
             return null;
 
         }
-    }
-
-    @Override
-    public List<User> getUsers() {
-        return null;
-    }
-
-    @Override
-    public User findByUsername(String username) {
-        return null;
-    }
-
-    @Override
-    public User findUserByEmail(String email) {
-        return null;
     }
 }
