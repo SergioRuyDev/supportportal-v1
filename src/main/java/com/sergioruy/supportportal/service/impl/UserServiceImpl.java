@@ -7,11 +7,11 @@ import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
 import com.sergioruy.supportportal.exception.domain.UsernameExistException;
 import com.sergioruy.supportportal.repository.UserRepository;
 import com.sergioruy.supportportal.service.UserService;
+import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,18 +29,13 @@ import static com.sergioruy.supportportal.enumeration.Role.ROLE_USER;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service
+@AllArgsConstructor
 @Transactional
 @Qualifier("userDetailsService")
 public class UserServiceImpl implements UserService, UserDetailsService {
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
-    private UserRepository userRepository;
-    private BCryptPasswordEncoder passwordEncoder;
-
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

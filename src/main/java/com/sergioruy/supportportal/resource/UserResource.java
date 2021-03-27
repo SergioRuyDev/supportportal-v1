@@ -7,22 +7,24 @@ import com.sergioruy.supportportal.exception.domain.ExceptionHandling;
 import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
 import com.sergioruy.supportportal.exception.domain.UsernameExistException;
 import com.sergioruy.supportportal.service.UserService;
+import com.sergioruy.supportportal.utility.JWTTokenProvider;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.OK;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping(path = {"/", "/user"})
 public class UserResource extends ExceptionHandling {
-    private UserService userService;
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JWTTokenProvider jwtTokenProvider;
 
-    @Autowired
-    public UserResource(UserService userService) {
-        this.userService = userService;
-    }
 
     @PostMapping("/login")
     public ResponseEntity<User> register(@RequestBody User user) {
