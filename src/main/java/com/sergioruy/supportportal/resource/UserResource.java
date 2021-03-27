@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import static com.sergioruy.supportportal.constant.SecurityConstant.JWT_TOKEN_HEADER;
 import static org.springframework.http.HttpStatus.OK;
 
-@AllArgsConstructor
 @RestController
+@AllArgsConstructor
 @RequestMapping(path = {"/", "/user"})
 public class UserResource extends ExceptionHandling {
     private final UserService userService;
@@ -31,10 +31,10 @@ public class UserResource extends ExceptionHandling {
     @PostMapping("/login")
     public ResponseEntity<User> login(@RequestBody User user) {
         authenticate(user.getUsername(), user.getPassword());
-        User loginUser = userService.findByUsername(user.getUsername());
+        User loginUser = userService.findUserByUsername(user.getUsername());
         UserPrincipal userPrincipal = new UserPrincipal(loginUser);
         HttpHeaders jwtHeader = getJwtHeader(userPrincipal);
-        return new ResponseEntity<>(loginUser, OK);
+        return new ResponseEntity<>(loginUser, jwtHeader, OK);
     }
 
     @PostMapping("/register")

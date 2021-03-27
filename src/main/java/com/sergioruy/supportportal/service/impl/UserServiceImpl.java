@@ -12,6 +12,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -37,6 +38,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findUserByUsername(username);
@@ -49,7 +51,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             userRepository.save(user);
             UserPrincipal userPrincipal = new UserPrincipal(user);
             LOGGER.info(FOUND_USER_BY_USERNAME + username);
-            return null;
+            return userPrincipal;
         }
     }
 
@@ -82,7 +84,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User findByUsername(String username) {
+    public User findUserByUsername(String username) {
         return userRepository.findUserByUsername(username);
     }
 
@@ -108,10 +110,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail) throws UserNotFoundException, UsernameExistException, EmailExistException {
-        User userByNewUsername = findByUsername(newUsername);
+        User userByNewUsername = findUserByUsername(newUsername);
         User userByNewEmail = findUserByEmail(newEmail);
         if (StringUtils.isNotBlank(currentUsername)) {
-            User currentUser = findByUsername(currentUsername);
+            User currentUser = findUserByUsername(currentUsername);
             if (currentUser == null) {
                 throw new UsernameNotFoundException(NO_USER_FOUND_BY_USERNAME + currentUsername);
             }
