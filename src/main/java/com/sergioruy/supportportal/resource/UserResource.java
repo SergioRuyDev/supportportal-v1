@@ -9,7 +9,6 @@ import com.sergioruy.supportportal.exception.domain.UsernameExistException;
 import com.sergioruy.supportportal.service.UserService;
 import com.sergioruy.supportportal.utility.JWTTokenProvider;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
