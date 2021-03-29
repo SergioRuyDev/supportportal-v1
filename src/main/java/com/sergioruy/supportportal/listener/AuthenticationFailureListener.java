@@ -1,23 +1,20 @@
 package com.sergioruy.supportportal.listener;
 
 import com.sergioruy.supportportal.service.LoginAttemptService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ExecutionException;
-
 
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor
 public class AuthenticationFailureListener {
-    private LoginAttemptService loginAttemptService;
+    private final LoginAttemptService loginAttemptService;
 
 
     @EventListener
-    public void onAuthenticationFailure(AuthenticationFailureBadCredentialsEvent event) throws ExecutionException {
+    public void onAuthenticationFailure(AuthenticationFailureBadCredentialsEvent event) {
         Object principal = event.getAuthentication().getPrincipal();
         if (principal instanceof String) {
             String username = (String) event.getAuthentication().getPrincipal();

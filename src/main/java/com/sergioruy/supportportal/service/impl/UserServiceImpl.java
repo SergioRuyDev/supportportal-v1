@@ -6,8 +6,9 @@ import com.sergioruy.supportportal.exception.domain.EmailExistException;
 import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
 import com.sergioruy.supportportal.exception.domain.UsernameExistException;
 import com.sergioruy.supportportal.repository.UserRepository;
+import com.sergioruy.supportportal.service.LoginAttemptService;
 import com.sergioruy.supportportal.service.UserService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -30,13 +31,14 @@ import static com.sergioruy.supportportal.enumeration.Role.ROLE_USER;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 @Service
-@AllArgsConstructor
 @Transactional
 @Qualifier("userDetailsService")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserServiceImpl implements UserService, UserDetailsService {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final LoginAttemptService loginAttemptService;
 
 
     @Override
@@ -46,12 +48,25 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             LOGGER.error(NO_USER_FOUND_BY_USERNAME + username);
             throw new UsernameNotFoundException(NO_USER_FOUND_BY_USERNAME + username);
         } else {
+            validateLoginAttempt(user);
             user.setLastLoginDateDisplay(user.getLastLoginDate());
             user.setLastLoginDate(new Date());
             userRepository.save(user);
             UserPrincipal userPrincipal = new UserPrincipal(user);
             LOGGER.info(FOUND_USER_BY_USERNAME + username);
             return userPrincipal;
+        }
+    }
+
+    private void validateLoginAttempt(User user) {
+        if (user.isNotLocked()) {
+            if (loginAttemptService.hasExceededMaxAttempts(user.getUsername())) {
+                user.setNotLocked(false);
+            } else {
+                user.setNotLocked(true);
+            }
+        } else {
+            loginAttemptService.evictUserFromLoginAttemptCache(user.getUsername());
         }
     }
 
@@ -136,3 +151,5 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         }
     }
 }
+
+
