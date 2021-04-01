@@ -2,6 +2,7 @@ package com.sergioruy.supportportal.service.impl;
 
 import com.sergioruy.supportportal.domain.User;
 import com.sergioruy.supportportal.domain.UserPrincipal;
+import com.sergioruy.supportportal.enumeration.Role;
 import com.sergioruy.supportportal.exception.domain.EmailExistException;
 import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
 import com.sergioruy.supportportal.exception.domain.UsernameExistException;
@@ -9,6 +10,7 @@ import com.sergioruy.supportportal.repository.UserRepository;
 import com.sergioruy.supportportal.service.EmailService;
 import com.sergioruy.supportportal.service.LoginAttemptService;
 import com.sergioruy.supportportal.service.UserService;
+import com.sun.xml.bind.v2.schemagen.episode.Package;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.mail.MessagingException;
@@ -99,6 +102,59 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
+    public User addNewUser(String firstname, String lastname, String username, String email, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, UsernameExistException, EmailExistException {
+        validateNewUsernameAndEmail(EMPTY, username, email);
+        User user = new User();
+        String password = generatePassword();
+        user.setUserId(generateUserId());
+        user.setFirstName(firstname);
+        user.setLastName(lastname);
+        user.setJoinDate(new Date());
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPassword(encodePassword(password));
+        user.setActive(isActive);
+        user.setNotLocked(isNonLocked);
+        user.setRole(getRoleEnumName(role).name());
+        user.setAuthorities(getRoleEnumName(role).getAuthorities());
+        user.setProfileImageUrl(getTemporaryProfileImageUrl(username));
+        userRepository.save(user);
+        saveProfileImage(username, profileImage);
+        return user;
+    }
+
+    private void saveProfileImage(String username, MultipartFile profileImage) {
+    }
+
+    private Role getRoleEnumName(String role) {
+    }
+
+
+    @Override
+    public User updateUser(String currentUsername, String newFirstname, String newLastname, String newUsername, String newEmail, String newRole, boolean isNonLocked, boolean isActive, MultipartFile profileImage) {
+        return null;
+    }
+
+    @Override
+    public void deleteUser(long id) {
+
+    }
+
+    @Override
+    public void resetPassword(String email) {
+
+    }
+
+    @Override
+    public User updateProfileImage(String username, MultipartFile profileImage) {
+        return null;
+    }
+
+    private String getTemporaryProfileImageUrl() {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
+    }
+
+    @Override
     public List<User> getUsers() {
         return userRepository.findAll();
     }
@@ -111,10 +167,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User findUserByEmail(String email) {
         return userRepository.findUserByEmail(email);
-    }
-
-    private String getTemporaryProfileImageUrl() {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
     }
 
     private String encodePassword(String password) {
