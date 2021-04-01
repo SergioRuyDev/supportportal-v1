@@ -4,6 +4,7 @@ import com.sergioruy.supportportal.domain.User;
 import com.sergioruy.supportportal.domain.UserPrincipal;
 import com.sergioruy.supportportal.enumeration.Role;
 import com.sergioruy.supportportal.exception.domain.EmailExistException;
+import com.sergioruy.supportportal.exception.domain.EmailNotFoundException;
 import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
 import com.sergioruy.supportportal.exception.domain.UsernameExistException;
 import com.sergioruy.supportportal.repository.UserRepository;
@@ -123,35 +124,44 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return user;
     }
 
-    private void saveProfileImage(User user, MultipartFile profileImage) {
-    }
-
-    private Role getRoleEnumName(String role) {
-    }
-
 
     @Override
-    public User updateUser(String currentUsername, String newFirstname, String newLastname, String newUsername, String newEmail, String newRole, boolean isNonLocked, boolean isActive, MultipartFile profileImage) {
-        return null;
+    public User updateUser(String currentUsername, String newFirstname, String newLastname, String newUsername, String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage) throws UserNotFoundException, UsernameExistException, EmailExistException {
+        User currentUser = validateNewUsernameAndEmail(currentUsername, newUsername, newEmail);
+        currentUser.setFirstName(newFirstname);
+        currentUser.setLastName(newLastname);
+        currentUser.setJoinDate(new Date());
+        currentUser.setUsername(newUsername);
+        currentUser.setEmail(newEmail);
+        currentUser.setActive(isActive);
+        currentUser.setNotLocked(isNonLocked);
+        currentUser.setRole(getRoleEnumName(role).name());
+        userRepository.save(currentUser);
+        saveProfileImage(currentUser, profileImage);
+        return currentUser;
     }
 
     @Override
     public void deleteUser(long id) {
+        userRepository.deleteById(id);
 
     }
 
     @Override
-    public void resetPassword(String email) {
-
+    public void resetPassword(String email) throws MessagingException, EmailNotFoundException {
+        User user = userRepository.findUserByEmail(email);
+        if (user == null) {
+            throw new EmailNotFoundException(NO_USER_FOUND_BY_EMAIL + email);
+        }
+        String password = generatePassword();
+        user.setPassword(encodePassword(password));
+        userRepository.save(user);
+        emailService.sendNewPasswordEmail(user.getFirstName(), password, user.getEmail());
     }
 
     @Override
     public User updateProfileImage(String username, MultipartFile profileImage) {
         return null;
-    }
-
-    private String getTemporaryProfileImageUrl(String username) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username).toUriString();
     }
 
     @Override
@@ -167,6 +177,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User findUserByEmail(String email) {
         return userRepository.findUserByEmail(email);
+    }
+
+    private void saveProfileImage(User user, MultipartFile profileImage) {
+    }
+
+    private Role getRoleEnumName(String role) {
+    }
+
+    private String getTemporaryProfileImageUrl(String username) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username).toUriString();
     }
 
     private String encodePassword(String password) {
