@@ -28,5 +28,5 @@ public interface UserService {
 
     void resetPassword(String email) throws MessagingException, EmailNotFoundException;
 
-    User updateProfileImage(String username, MultipartFile profileImage);
+    User updateProfileImage(String username, MultipartFile profileImage) throws UserNotFoundException, UsernameExistException, EmailExistException;
 }
