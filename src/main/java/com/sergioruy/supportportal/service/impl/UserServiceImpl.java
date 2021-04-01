@@ -10,7 +10,6 @@ import com.sergioruy.supportportal.repository.UserRepository;
 import com.sergioruy.supportportal.service.EmailService;
 import com.sergioruy.supportportal.service.LoginAttemptService;
 import com.sergioruy.supportportal.service.UserService;
-import com.sun.xml.bind.v2.schemagen.episode.Package;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +30,7 @@ import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
+import static com.sergioruy.supportportal.constant.FileConstant.DEFAULT_USER_IMAGE_PATH;
 import static com.sergioruy.supportportal.constant.UserImplConstant.*;
 import static com.sergioruy.supportportal.enumeration.Role.ROLE_USER;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setNotLocked(true);
         user.setRole(ROLE_USER.name());
         user.setAuthorities(ROLE_USER.getAuthorities());
-        user.setProfileImageUrl(getTemporaryProfileImageUrl());
+        user.setProfileImageUrl(getTemporaryProfileImageUrl(username));
         userRepository.save(user);
         //LOGGER.info("New user password: " + password);
         emailService.sendNewPasswordEmail(firstName, password, email);
@@ -119,11 +119,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setAuthorities(getRoleEnumName(role).getAuthorities());
         user.setProfileImageUrl(getTemporaryProfileImageUrl(username));
         userRepository.save(user);
-        saveProfileImage(username, profileImage);
+        saveProfileImage(user, profileImage);
         return user;
     }
 
-    private void saveProfileImage(String username, MultipartFile profileImage) {
+    private void saveProfileImage(User user, MultipartFile profileImage) {
     }
 
     private Role getRoleEnumName(String role) {
@@ -150,8 +150,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return null;
     }
 
-    private String getTemporaryProfileImageUrl() {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH).toUriString();
+    private String getTemporaryProfileImageUrl(String username) {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(DEFAULT_USER_IMAGE_PATH + username).toUriString();
     }
 
     @Override
