@@ -23,4 +23,9 @@ public interface UserService {
 
     User updateUser(String currentUsername, String newFirstname, String newLastname, String newUsername, String newEmail, String newRole, boolean isNonLocked, boolean isActive, MultipartFile profileImage);
 
+    void deleteUser(long id);
+
+    void resetPassword(String email);
+
+    User updateProfileImage(String username, MultipartFile profileImage);
 }
