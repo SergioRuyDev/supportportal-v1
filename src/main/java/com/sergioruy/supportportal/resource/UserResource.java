@@ -27,6 +27,7 @@ import static org.springframework.http.HttpStatus.OK;
 @AllArgsConstructor
 @RequestMapping(path = {"/", "/user"})
 public class UserResource extends ExceptionHandling {
+    public static final String EMAIL_SENT = "An email with a new password was sent to: ";
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JWTTokenProvider jwtTokenProvider;
@@ -87,13 +88,13 @@ public class UserResource extends ExceptionHandling {
     }
 
     @GetMapping("/resetPassword/{email}")
-    public ResponseEntity<List<User>> resetPassword(@PathVariable("email") String email)
+    public ResponseEntity<HttpResponse> resetPassword(@PathVariable("email") String email)
             throws MessagingException, EmailNotFoundException {
         userService.resetPassword(email);
-        return response(OK, "Email sent to: " + email);
+        return response(OK, EMAIL_SENT + email);
     }
 
-    private ResponseEntity<HttpResponse> response(HttpStatus ok, String s) {
+    private ResponseEntity<HttpResponse> response(HttpStatus httpResponse, String message) {
     }
 
     @GetMapping("/list")
