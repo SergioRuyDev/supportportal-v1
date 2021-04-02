@@ -28,6 +28,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RequestMapping(path = {"/", "/user"})
 public class UserResource extends ExceptionHandling {
     public static final String EMAIL_SENT = "An email with a new password was sent to: ";
+    public static final String USER_DELETED_SUCCESSFULLY = "User deleted successfully.";
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JWTTokenProvider jwtTokenProvider;
@@ -94,7 +95,13 @@ public class UserResource extends ExceptionHandling {
         return response(OK, EMAIL_SENT + email);
     }
 
-    private ResponseEntity<HttpResponse> response(HttpStatus httpResponse, String message) {
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<HttpResponse> deleteUser(@PathVariable("id") long id) {
+        userService.deleteUser(id);
+        return response(OK, USER_DELETED_SUCCESSFULLY);
+    }
+
+    private ResponseEntity<HttpResponse> response(HttpStatus httpStatus, String message) {
     }
 
     @GetMapping("/list")
