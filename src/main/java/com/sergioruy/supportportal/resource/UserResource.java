@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.sergioruy.supportportal.constant.SecurityConstant.JWT_TOKEN_HEADER;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
@@ -88,6 +90,12 @@ public class UserResource extends ExceptionHandling {
         return new ResponseEntity<>(user, OK);
     }
 
+    @GetMapping("/list")
+    public ResponseEntity<List<User>> getAllUser() {
+        List<User> users = userService.getUsers();
+        return new ResponseEntity<>(users, OK);
+    }
+
     @GetMapping("/resetPassword/{email}")
     public ResponseEntity<HttpResponse> resetPassword(@PathVariable("email") String email)
             throws MessagingException, EmailNotFoundException {
@@ -96,18 +104,24 @@ public class UserResource extends ExceptionHandling {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyAuthority('user:delete')")
     public ResponseEntity<HttpResponse> deleteUser(@PathVariable("id") long id) {
         userService.deleteUser(id);
-        return response(OK, USER_DELETED_SUCCESSFULLY);
+        return response(NO_CONTENT, USER_DELETED_SUCCESSFULLY);
+    }
+
+    @PutMapping("/updateProfileImage")
+    public ResponseEntity<User> updateProfileImage(
+                                       @RequestParam("username") String username,
+                                       @RequestParam(value = "profileImage") MultipartFile profileImage)
+            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException {
+        User user = userService.updateProfileImage(username, profileImage);
+        return new ResponseEntity<>(user, OK);
     }
 
     private ResponseEntity<HttpResponse> response(HttpStatus httpStatus, String message) {
-    }
-
-    @GetMapping("/list")
-    public ResponseEntity<List<User>> getAllUser() {
-        List<User> users = userService.getUsers();
-        return new ResponseEntity<>(users, OK);
+        return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus, httpStatus.getReasonPhrase().toUpperCase(),
+                message.toUpperCase()),  httpStatus);
     }
 
 
