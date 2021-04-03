@@ -19,11 +19,16 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.mail.MessagingException;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
+import static com.sergioruy.supportportal.constant.FileConstant.FORWARD_SLASH;
+import static com.sergioruy.supportportal.constant.FileConstant.USER_FOLDER;
 import static com.sergioruy.supportportal.constant.SecurityConstant.JWT_TOKEN_HEADER;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
 
 @RestController
 @AllArgsConstructor
@@ -118,6 +123,13 @@ public class UserResource extends ExceptionHandling {
         User user = userService.updateProfileImage(username, profileImage);
         return new ResponseEntity<>(user, OK);
     }
+
+    @GetMapping(path = "/image/{username}/{filename}", produces = IMAGE_JPEG_VALUE)
+    public byte[] getProfileImage(@PathVariable("username") String username, @PathVariable("filename") String filename) throws IOException {
+        return Files.readAllBytes(Paths.get(USER_FOLDER + username + FORWARD_SLASH + filename));
+    }
+
+    @GetMapping()
 
     private ResponseEntity<HttpResponse> response(HttpStatus httpStatus, String message) {
         return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus, httpStatus.getReasonPhrase().toUpperCase(),
