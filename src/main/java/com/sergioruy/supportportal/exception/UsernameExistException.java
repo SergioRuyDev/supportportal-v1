@@ -1,4 +1,4 @@
-package com.sergioruy.supportportal.exception.domain;
+package com.sergioruy.supportportal.exception;
 
 public class UsernameExistException extends Exception {
     public UsernameExistException(String message) {

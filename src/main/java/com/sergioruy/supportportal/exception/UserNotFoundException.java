@@ -1,4 +1,4 @@
-package com.sergioruy.supportportal.exception.domain;
+package com.sergioruy.supportportal.exception;
 
 public class UserNotFoundException extends Exception {
     public UserNotFoundException(String message) {

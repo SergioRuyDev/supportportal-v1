@@ -3,10 +3,10 @@ package com.sergioruy.supportportal.service.impl;
 import com.sergioruy.supportportal.domain.User;
 import com.sergioruy.supportportal.domain.UserPrincipal;
 import com.sergioruy.supportportal.enumeration.Role;
-import com.sergioruy.supportportal.exception.domain.EmailExistException;
-import com.sergioruy.supportportal.exception.domain.EmailNotFoundException;
-import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
-import com.sergioruy.supportportal.exception.domain.UsernameExistException;
+import com.sergioruy.supportportal.exception.EmailExistException;
+import com.sergioruy.supportportal.exception.EmailNotFoundException;
+import com.sergioruy.supportportal.exception.UserNotFoundException;
+import com.sergioruy.supportportal.exception.UsernameExistException;
 import com.sergioruy.supportportal.repository.UserRepository;
 import com.sergioruy.supportportal.service.EmailService;
 import com.sergioruy.supportportal.service.LoginAttemptService;
@@ -154,7 +154,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public void deleteUser(long id) {
         userRepository.deleteById(id);
-
     }
 
     @Override
