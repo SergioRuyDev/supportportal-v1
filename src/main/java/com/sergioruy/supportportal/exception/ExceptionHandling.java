@@ -1,11 +1,11 @@
-package com.sergioruy.supportportal.exception.domain;
+package com.sergioruy.supportportal.exception;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.sergioruy.supportportal.domain.HttpResponse;
-import com.sergioruy.supportportal.exception.EmailExistException;
-import com.sergioruy.supportportal.exception.EmailNotFoundException;
-import com.sergioruy.supportportal.exception.UserNotFoundException;
-import com.sergioruy.supportportal.exception.UsernameExistException;
+import com.sergioruy.supportportal.exception.domain.EmailExistException;
+import com.sergioruy.supportportal.exception.domain.EmailNotFoundException;
+import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
+import com.sergioruy.supportportal.exception.domain.UsernameExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.error.ErrorController;

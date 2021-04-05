@@ -1,10 +1,10 @@
 package com.sergioruy.supportportal.service;
 
 import com.sergioruy.supportportal.domain.User;
-import com.sergioruy.supportportal.exception.EmailExistException;
-import com.sergioruy.supportportal.exception.EmailNotFoundException;
-import com.sergioruy.supportportal.exception.UserNotFoundException;
-import com.sergioruy.supportportal.exception.UsernameExistException;
+import com.sergioruy.supportportal.exception.domain.EmailExistException;
+import com.sergioruy.supportportal.exception.domain.EmailNotFoundException;
+import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
+import com.sergioruy.supportportal.exception.domain.UsernameExistException;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;

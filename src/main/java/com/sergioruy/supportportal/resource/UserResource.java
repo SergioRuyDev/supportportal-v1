@@ -1,13 +1,13 @@
 package com.sergioruy.supportportal.resource;
 
-import com.sergioruy.supportportal.exception.domain.ExceptionHandling;
+import com.sergioruy.supportportal.exception.ExceptionHandling;
 import com.sergioruy.supportportal.domain.HttpResponse;
 import com.sergioruy.supportportal.domain.User;
 import com.sergioruy.supportportal.domain.UserPrincipal;
-import com.sergioruy.supportportal.exception.EmailExistException;
-import com.sergioruy.supportportal.exception.EmailNotFoundException;
-import com.sergioruy.supportportal.exception.UserNotFoundException;
-import com.sergioruy.supportportal.exception.UsernameExistException;
+import com.sergioruy.supportportal.exception.domain.EmailExistException;
+import com.sergioruy.supportportal.exception.domain.EmailNotFoundException;
+import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
+import com.sergioruy.supportportal.exception.domain.UsernameExistException;
 import com.sergioruy.supportportal.service.UserService;
 import com.sergioruy.supportportal.utility.JWTTokenProvider;
 import lombok.AllArgsConstructor;
