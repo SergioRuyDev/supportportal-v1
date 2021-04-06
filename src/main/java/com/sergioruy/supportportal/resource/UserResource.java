@@ -4,10 +4,7 @@ import com.sergioruy.supportportal.exception.ExceptionHandling;
 import com.sergioruy.supportportal.domain.HttpResponse;
 import com.sergioruy.supportportal.domain.User;
 import com.sergioruy.supportportal.domain.UserPrincipal;
-import com.sergioruy.supportportal.exception.domain.EmailExistException;
-import com.sergioruy.supportportal.exception.domain.EmailNotFoundException;
-import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
-import com.sergioruy.supportportal.exception.domain.UsernameExistException;
+import com.sergioruy.supportportal.exception.domain.*;
 import com.sergioruy.supportportal.service.UserService;
 import com.sergioruy.supportportal.utility.JWTTokenProvider;
 import lombok.AllArgsConstructor;
@@ -72,7 +69,7 @@ public class UserResource extends ExceptionHandling {
                                            @RequestParam("isActive") String isActive,
                                            @RequestParam("isNonLocked") String isNonLocked,
                                            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage)
-            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException {
+            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, NotAnImageFileException {
         User newUser = userService.addNewUser(firstName, lastName, username, email, role, Boolean.parseBoolean(isNonLocked)
         , Boolean.parseBoolean(isActive), profileImage);
         return new ResponseEntity<>(newUser, OK);
@@ -89,7 +86,7 @@ public class UserResource extends ExceptionHandling {
                                            @RequestParam("isActive") String isActive,
                                            @RequestParam("isNonLocked") String isNonLocked,
                                            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage)
-            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException {
+            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, NotAnImageFileException {
         User updatedUser = userService.updateUser(currentUsername, firstName, lastName, username, email, role,
                 Boolean.parseBoolean(isNonLocked), Boolean.parseBoolean(isActive), profileImage);
         return new ResponseEntity<>(updatedUser, OK);
@@ -125,7 +122,7 @@ public class UserResource extends ExceptionHandling {
     public ResponseEntity<User> updateProfileImage(
                                        @RequestParam("username") String username,
                                        @RequestParam(value = "profileImage") MultipartFile profileImage)
-            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException {
+            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, NotAnImageFileException {
         User user = userService.updateProfileImage(username, profileImage);
         return new ResponseEntity<>(user, OK);
     }

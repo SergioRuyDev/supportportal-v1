@@ -3,10 +3,7 @@ package com.sergioruy.supportportal.service.impl;
 import com.sergioruy.supportportal.domain.User;
 import com.sergioruy.supportportal.domain.UserPrincipal;
 import com.sergioruy.supportportal.enumeration.Role;
-import com.sergioruy.supportportal.exception.domain.EmailExistException;
-import com.sergioruy.supportportal.exception.domain.EmailNotFoundException;
-import com.sergioruy.supportportal.exception.domain.UserNotFoundException;
-import com.sergioruy.supportportal.exception.domain.UsernameExistException;
+import com.sergioruy.supportportal.exception.domain.*;
 import com.sergioruy.supportportal.repository.UserRepository;
 import com.sergioruy.supportportal.service.EmailService;
 import com.sergioruy.supportportal.service.LoginAttemptService;
@@ -34,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -42,6 +40,7 @@ import static com.sergioruy.supportportal.constant.UserImplConstant.*;
 import static com.sergioruy.supportportal.enumeration.Role.ROLE_USER;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.MediaType.*;
 
 @Service
 @Transactional
@@ -53,7 +52,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final LoginAttemptService loginAttemptService;
     private final EmailService emailService;
-
 
 
     @Override
@@ -70,18 +68,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             UserPrincipal userPrincipal = new UserPrincipal(user);
             LOGGER.info(FOUND_USER_BY_USERNAME + username);
             return userPrincipal;
-        }
-    }
-
-    private void validateLoginAttempt(User user) {
-        if (user.isNotLocked()) {
-            if (loginAttemptService.hasExceededMaxAttempts(user.getUsername())) {
-                user.setNotLocked(false);
-            } else {
-                user.setNotLocked(true);
-            }
-        } else {
-            loginAttemptService.evictUserFromLoginAttemptCache(user.getUsername());
         }
     }
 
@@ -112,7 +98,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User addNewUser(String firstname, String lastname, String username, String email, String role
             , boolean isNonLocked, boolean isActive, MultipartFile profileImage)
-            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException {
+            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, NotAnImageFileException {
         validateNewUsernameAndEmail(EMPTY, username, email);
         User user = new User();
         String password = generatePassword();
@@ -137,7 +123,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User updateUser(String currentUsername, String newFirstname, String newLastname, String newUsername,
                            String newEmail, String role, boolean isNonLocked, boolean isActive, MultipartFile profileImage)
-            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException {
+            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, NotAnImageFileException {
         User currentUser = validateNewUsernameAndEmail(currentUsername, newUsername, newEmail);
         currentUser.setFirstName(newFirstname);
         currentUser.setLastName(newLastname);
@@ -151,14 +137,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         userRepository.save(currentUser);
         saveProfileImage(currentUser, profileImage);
         return currentUser;
-    }
-
-    @Override
-    public void deleteUser(String username) throws IOException {
-        User user = userRepository.findUserByUsername(username);
-        Path userFolder = Paths.get(USER_FOLDER + user.getUsername()).toAbsolutePath().normalize();
-        FileUtils.deleteDirectory(new File(userFolder.toString()));
-        userRepository.deleteById(user.getId());
     }
 
     @Override
@@ -176,10 +154,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User updateProfileImage(String username, MultipartFile profileImage)
-            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException {
+            throws UserNotFoundException, UsernameExistException, EmailExistException, IOException, NotAnImageFileException {
         User user = validateNewUsernameAndEmail(username, null, null);
         saveProfileImage(user, profileImage);
-        return null;
+        return user;
     }
 
     @Override
@@ -197,19 +175,29 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return userRepository.findUserByEmail(email);
     }
 
-    private void saveProfileImage(User user, MultipartFile profileImage) throws IOException {
+    @Override
+    public void deleteUser(String username) throws IOException {
+        User user = userRepository.findUserByUsername(username);
+        Path userFolder = Paths.get(USER_FOLDER + user.getUsername()).toAbsolutePath().normalize();
+        FileUtils.deleteDirectory(new File(userFolder.toString()));
+        userRepository.deleteById(user.getId());
+    }
+
+    private void saveProfileImage(User user, MultipartFile profileImage) throws IOException, NotAnImageFileException {
         if (profileImage != null) {
+            if(!Arrays.asList(IMAGE_JPEG_VALUE, IMAGE_PNG_VALUE, IMAGE_GIF_VALUE).contains(profileImage.getContentType())) {
+                throw new NotAnImageFileException(profileImage.getOriginalFilename() + NOT_AN_IMAGE_FILE);
+            }
             Path userFolder = Paths.get(USER_FOLDER + user.getUsername()).toAbsolutePath().normalize();
-            if (!Files.exists(userFolder)) {
+            if(!Files.exists(userFolder)) {
                 Files.createDirectories(userFolder);
                 LOGGER.info(DIRECTORY_CREATED + userFolder);
             }
             Files.deleteIfExists(Paths.get(userFolder + user.getUsername() + DOT + JPG_EXTENSION));
-            Files.copy(profileImage.getInputStream(), userFolder.resolve(user.getUsername() + DOT + JPG_EXTENSION),
-                    REPLACE_EXISTING);
+            Files.copy(profileImage.getInputStream(), userFolder.resolve(user.getUsername() + DOT + JPG_EXTENSION), REPLACE_EXISTING);
             user.setProfileImageUrl(setProfileImageUrl(user.getUsername()));
             userRepository.save(user);
-            LOGGER.info(FILE_SAVED_IN_SYSTEM + profileImage.getOriginalFilename());
+            LOGGER.info(FILE_SAVED_IN_FILE_SYSTEM + profileImage.getOriginalFilename());
         }
     }
 
@@ -236,6 +224,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private String generateUserId() {
         return RandomStringUtils.randomNumeric(10);
+    }
+
+    private void validateLoginAttempt(User user) {
+        if (user.isNotLocked()) {
+            if (loginAttemptService.hasExceededMaxAttempts(user.getUsername())) {
+                user.setNotLocked(false);
+            } else {
+                user.setNotLocked(true);
+            }
+        } else {
+            loginAttemptService.evictUserFromLoginAttemptCache(user.getUsername());
+        }
     }
 
     private User validateNewUsernameAndEmail(String currentUsername, String newUsername, String newEmail)
