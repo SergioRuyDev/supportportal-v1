@@ -29,7 +29,6 @@ import java.util.List;
 
 import static com.sergioruy.supportportal.constant.FileConstant.*;
 import static com.sergioruy.supportportal.constant.SecurityConstant.JWT_TOKEN_HEADER;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
 

@@ -28,6 +28,5 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(outputStream, httpResponse);
             outputStream.flush();
-
     }
 }
