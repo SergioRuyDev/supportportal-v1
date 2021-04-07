@@ -4,8 +4,8 @@ import com.auth0.jwt.JWT;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 import static com.sergioruy.supportportal.constant.SecurityConstant.*;
+import static java.util.Arrays.stream;
 
-import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.sergioruy.supportportal.domain.UserPrincipal;
@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Component
 public class JWTTokenProvider {
 
@@ -40,7 +41,7 @@ public class JWTTokenProvider {
 
     public List<GrantedAuthority> getAuthorities(String token) {
         String[] claims = getClaimsFromToken(token);
-        return Arrays.stream(claims).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        return stream(claims).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 
     public Authentication getAuthentication(String username, List<GrantedAuthority> authorities, HttpServletRequest request) {
@@ -51,27 +52,27 @@ public class JWTTokenProvider {
     }
 
     public boolean isTokenValid(String username, String token) {
-        JWTVerifier verifier = getJWTVerifier();
-        return StringUtils.isAllEmpty(username) && !isTokenExpired(verifier, token);
+        com.auth0.jwt.interfaces.JWTVerifier verifier = getJWTVerifier();
+        return StringUtils.isNotEmpty(username) && !isTokenExpired(verifier, token);
     }
 
     public String getSubject(String token) {
-        JWTVerifier verifier = getJWTVerifier();
+        com.auth0.jwt.interfaces.JWTVerifier verifier = getJWTVerifier();
         return verifier.verify(token).getSubject();
     }
 
-    private boolean isTokenExpired(JWTVerifier verifier, String token) {
+    private boolean isTokenExpired(com.auth0.jwt.interfaces.JWTVerifier verifier, String token) {
         Date expiration = verifier.verify(token).getExpiresAt();
         return expiration.before(new Date());
     }
 
     private String[] getClaimsFromToken(String token) {
-        JWTVerifier verifier = getJWTVerifier();
+        com.auth0.jwt.interfaces.JWTVerifier verifier = getJWTVerifier();
         return verifier.verify(token).getClaim(AUTHORITIES).asArray(String.class);
     }
 
-    private JWTVerifier getJWTVerifier() {
-        JWTVerifier verifier;
+    private com.auth0.jwt.interfaces.JWTVerifier getJWTVerifier() {
+        com.auth0.jwt.interfaces.JWTVerifier verifier;
         try {
             Algorithm algorithm = HMAC512(secret);
             verifier = JWT.require(algorithm).withIssuer(SERGIO_RUY_DEV).build();
@@ -83,10 +84,9 @@ public class JWTTokenProvider {
 
     private String[] getClaimsFromUser(UserPrincipal user) {
         List<String> authorities = new ArrayList<>();
-        for (GrantedAuthority grantedAuthority : user.getAuthorities()) {
+        for (GrantedAuthority grantedAuthority : user.getAuthorities()){
             authorities.add(grantedAuthority.getAuthority());
         }
         return authorities.toArray(new String[0]);
     }
-
 }
