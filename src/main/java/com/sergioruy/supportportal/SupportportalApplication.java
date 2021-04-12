@@ -22,7 +22,8 @@ public class SupportportalApplication {
         new File(USER_FOLDER).mkdirs();
     }
 
-    public CorsFilter CorsFilter() {
+    @Bean
+    public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);

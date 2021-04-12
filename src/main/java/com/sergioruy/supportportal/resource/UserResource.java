@@ -117,7 +117,7 @@ public class UserResource extends ExceptionHandling {
         return response(OK, USER_DELETED_SUCCESSFULLY);
     }
 
-    @PutMapping("/updateProfileImage")
+    @PostMapping("/updateProfileImage")
     public ResponseEntity<User> updateProfileImage(
                                        @RequestParam("username") String username,
                                        @RequestParam(value = "profileImage") MultipartFile profileImage)
