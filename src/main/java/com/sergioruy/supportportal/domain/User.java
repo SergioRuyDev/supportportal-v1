@@ -13,6 +13,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "portal_users")
 public class User implements Serializable {
 
     @Id
