@@ -245,7 +245,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         if (StringUtils.isNotBlank(currentUsername)) {
             User currentUser = findUserByUsername(currentUsername);
             if (currentUser == null) {
-                throw new UsernameNotFoundException(NO_USER_FOUND_BY_USERNAME + currentUsername);
+                throw new UserNotFoundException(NO_USER_FOUND_BY_USERNAME + currentUsername);
             }
             if (userByNewUsername != null && !currentUser.getId().equals(userByNewUsername.getId())) {
                 throw new UsernameExistException(USERNAME_ALREADY_EXISTS);
